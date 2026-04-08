@@ -3,69 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plasmid Calculator</title>
-
-<!-- SheetJS for Excel export -->
+<title>Plasmid Preparation Calculator</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
   body {
-    font-family: Arial, sans-serif;
-    padding: 15px;
-    background: #f4f6f8;
     margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: #eef2f5;
+    color: #2c3e50;
   }
 
-  h2 {
+  header {
+    background: #1f3a5f;
+    color: white;
+    padding: 18px;
     text-align: center;
   }
 
+  header h1 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    opacity: 0.85;
+  }
+
   .container {
-    max-width: 900px;
-    margin: auto;
-  }
-
-  /* Desktop layout */
-  @media (min-width: 768px) {
-    .row {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 3fr;
-      align-items: center;
-    }
-  }
-
-  /* Mobile layout */
-  @media (max-width: 767px) {
-    .row {
-      display: flex;
-      flex-direction: column;
-    }
+    max-width: 850px;
+    margin: 15px auto;
+    padding: 15px;
   }
 
   .row {
+    display: grid;
+    grid-template-columns: 2fr 2fr auto;
     gap: 10px;
-    margin-bottom: 12px;
     padding: 12px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    margin-bottom: 12px;
+    align-items: center;
+  }
+
+  /* Mobile fix */
+  @media (max-width: 768px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+
+    select, input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .delete {
+      width: 100%;
+    }
+
+    .result {
+      width: 100%;
+    }
   }
 
   select, input {
-    padding: 8px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
     width: 100%;
+    box-sizing: border-box;
   }
 
   input.invalid {
-    border: 2px solid red;
-    background: #ffe6e6;
+    border-color: #e74c3c;
+    background: #fdecea;
   }
 
   .result {
+    grid-column: span 3;
     font-size: 14px;
+    font-weight: 500;
   }
 
-  .buttons {
+  .result strong {
+    color: #1f3a5f;
+  }
+
+  .delete {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .controls {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -74,43 +112,58 @@
   }
 
   button {
-    padding: 10px 14px;
     border: none;
     border-radius: 8px;
+    padding: 10px 14px;
     cursor: pointer;
+    font-weight: 500;
   }
 
-  .add { background: #2ecc71; color: white; }
-  .save { background: #3498db; color: white; }
-  .delete { background: #e74c3c; color: white; }
-  .export { background: #9b59b6; color: white; }
+  .primary { background: #2ecc71; color: white; }
+  .secondary { background: #3498db; color: white; }
+  .export { background: #8e44ad; color: white; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 20px;
+    color: #7f8c8d;
+    padding-bottom: 15px;
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
-<h2>Plasmid Calculator</h2>
-<div id="container"></div>
+<header>
+  <h1>Plasmid Preparation Calculator</h1>
+  <p>Molecular Biology Utility Tool</p>
+</header>
 
-<div class="buttons">
-  <button class="add" onclick="addRow()">+ Add Row</button>
-  <button class="save" onclick="saveData()">Save</button>
-  <button class="save" onclick="loadData()">Load</button>
-  <button class="export" onclick="exportExcel()">Export Excel</button>
+<div class="container">
+  <div id="container"></div>
+
+  <div class="controls">
+    <button class="primary" onclick="addRow()">+ Add Reaction</button>
+    <button class="secondary" onclick="saveData()">Save</button>
+    <button class="secondary" onclick="loadData()">Load</button>
+    <button class="export" onclick="exportExcel()">Export Excel</button>
+  </div>
 </div>
-</div>
+
+<footer>
+  For research use only • Verify all values before experimental use
+</footer>
 
 <script>
 const presets = [
-  { label: "1.2μg / 40μl", ug: 1.2, totalVol: 40 },
-  { label: "1.8μg / 60μl", ug: 1.8, totalVol: 60 },
-  { label: "2.4μg / 80μl", ug: 2.4, totalVol: 80 },
-  { label: "3μg / 100μl", ug: 3.0, totalVol: 100 }
+  { label: "1.2 μg / 40 μl", ug: 1.2, totalVol: 40 },
+  { label: "1.8 μg / 60 μl", ug: 1.8, totalVol: 60 },
+  { label: "2.4 μg / 80 μl", ug: 2.4, totalVol: 80 },
+  { label: "3.0 μg / 100 μl", ug: 3.0, totalVol: 100 }
 ];
 
 function addRow(data = null) {
   const container = document.getElementById("container");
-
   const row = document.createElement("div");
   row.className = "row";
 
@@ -124,12 +177,12 @@ function addRow(data = null) {
 
   const input = document.createElement("input");
   input.type = "number";
-  input.placeholder = "ng/μl";
+  input.placeholder = "DNA Concentration (ng/μl)";
 
-  const delBtn = document.createElement("button");
-  delBtn.textContent = "Delete";
-  delBtn.className = "delete";
-  delBtn.onclick = () => row.remove();
+  const deleteBtn = document.createElement("button");
+  deleteBtn.textContent = "Delete";
+  deleteBtn.className = "delete";
+  deleteBtn.onclick = () => row.remove();
 
   const result = document.createElement("div");
   result.className = "result";
@@ -145,7 +198,7 @@ function addRow(data = null) {
 
     if (!concentration || concentration <= 0) {
       input.classList.add("invalid");
-      result.textContent = "Enter valid concentration";
+      result.innerHTML = "Enter valid DNA concentration";
       return;
     }
 
@@ -156,11 +209,11 @@ function addRow(data = null) {
     const waterVol = preset.totalVol - plasmidVol;
 
     if (waterVol < 0) {
-      result.textContent = "⚠️ Volume exceeds total";
+      result.innerHTML = "⚠️ Volume exceeds total reaction volume";
       return;
     }
 
-    result.textContent = `Plasmid: ${plasmidVol.toFixed(2)} μl | H₂O: ${waterVol.toFixed(2)} μl`;
+    result.innerHTML = `<strong>Plasmid:</strong> ${plasmidVol.toFixed(2)} μl &nbsp; | &nbsp; <strong>Nuclease-free Water:</strong> ${waterVol.toFixed(2)} μl`;
   }
 
   select.onchange = calculate;
@@ -168,36 +221,31 @@ function addRow(data = null) {
 
   row.appendChild(select);
   row.appendChild(input);
-  row.appendChild(delBtn);
+  row.appendChild(deleteBtn);
   row.appendChild(result);
 
   container.appendChild(row);
-
   calculate();
 }
 
 function saveData() {
   const rows = document.querySelectorAll(".row");
   const data = [];
-
   rows.forEach(row => {
     data.push({
       preset: row.querySelector("select").value,
       value: row.querySelector("input").value
     });
   });
-
   localStorage.setItem("plasmidData", JSON.stringify(data));
-  alert("Saved!");
+  alert("Saved successfully");
 }
 
 function loadData() {
   const container = document.getElementById("container");
   container.innerHTML = "";
-
   const data = JSON.parse(localStorage.getItem("plasmidData"));
   if (!data) return;
-
   data.forEach(d => addRow(d));
 }
 
@@ -205,39 +253,30 @@ function exportExcel() {
   const rows = document.querySelectorAll(".row");
   const data = [];
 
-  rows.forEach((row, index) => {
-    const presetIndex = row.querySelector("select").value;
-    const preset = presets[presetIndex];
+  rows.forEach((row, i) => {
+    const preset = presets[row.querySelector("select").value];
     const concentration = parseFloat(row.querySelector("input").value);
 
     if (!concentration || concentration <= 0) return;
 
-    const requiredNg = preset.ug * 1000;
-    const plasmidVol = requiredNg / concentration;
+    const plasmidVol = (preset.ug * 1000) / concentration;
     const waterVol = preset.totalVol - plasmidVol;
 
     data.push({
-      Row: index + 1,
+      Reaction: i + 1,
       Preset: preset.label,
-      "Concentration (ng/μl)": concentration,
-      "Plasmid (μl)": plasmidVol.toFixed(2),
-      "H2O (μl)": waterVol.toFixed(2)
+      Concentration: concentration,
+      Plasmid_uL: plasmidVol.toFixed(2),
+      Water_uL: waterVol.toFixed(2)
     });
   });
 
-  if (data.length === 0) {
-    alert("No valid data to export");
-    return;
-  }
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Results");
-
-  XLSX.writeFile(workbook, "plasmid_calculations.xlsx");
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Results");
+  XLSX.writeFile(wb, "plasmid_results.xlsx");
 }
 
-// Initial row
 addRow();
 </script>
 
