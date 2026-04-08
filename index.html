@@ -50,23 +50,14 @@
     align-items: center;
   }
 
-  /* Mobile fix */
   @media (max-width: 768px) {
     .row {
       grid-template-columns: 1fr;
     }
 
-    select, input {
+    select, input, .delete, .result {
       width: 100%;
       box-sizing: border-box;
-    }
-
-    .delete {
-      width: 100%;
-    }
-
-    .result {
-      width: 100%;
     }
   }
 
@@ -130,6 +121,16 @@
     color: #7f8c8d;
     padding-bottom: 15px;
   }
+
+  .global-box {
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .global-box select {
+    max-width: 300px;
+    margin-top: 8px;
+  }
 </style>
 </head>
 <body>
@@ -140,6 +141,13 @@
 </header>
 
 <div class="container">
+
+  <!-- GLOBAL PRESET SELECTOR -->
+  <div class="global-box">
+    <label><strong>Global Preset (applies to new rows):</strong></label><br>
+    <select id="globalPreset"></select>
+  </div>
+
   <div id="container"></div>
 
   <div class="controls">
@@ -161,6 +169,21 @@ const presets = [
   { label: "2.4 μg / 80 μl", ug: 2.4, totalVol: 80 },
   { label: "3.0 μg / 100 μl", ug: 3.0, totalVol: 100 }
 ];
+
+let globalPresetIndex = 0;
+
+// Populate global preset dropdown
+const globalPresetSelect = document.getElementById("globalPreset");
+presets.forEach((p, i) => {
+  const option = document.createElement("option");
+  option.value = i;
+  option.textContent = p.label;
+  globalPresetSelect.appendChild(option);
+});
+
+globalPresetSelect.addEventListener("change", (e) => {
+  globalPresetIndex = e.target.value;
+});
 
 function addRow(data = null) {
   const container = document.getElementById("container");
@@ -187,9 +210,12 @@ function addRow(data = null) {
   const result = document.createElement("div");
   result.className = "result";
 
+  // Apply saved data OR global preset
   if (data) {
     select.value = data.preset;
     input.value = data.value;
+  } else {
+    select.value = globalPresetIndex;
   }
 
   function calculate() {
